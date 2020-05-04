@@ -2,7 +2,9 @@ package com.mfrancetic.coinman.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
@@ -14,6 +16,7 @@ public class CoinMan extends ApplicationAdapter {
     SpriteBatch batch;
     Texture background;
     Texture[] man;
+    Texture dizzyMan;
     int manState;
     int pause = 0;
 
@@ -25,7 +28,16 @@ public class CoinMan extends ApplicationAdapter {
     int manX = 0;
     Rectangle playerRectangle;
 
+    int score;
+    BitmapFont font;
+
     Random random;
+
+    int gameState;
+
+    private static final int GAME_LIVE = 1;
+    private static final int GAME_NOT_STARTED = 0;
+    private static final int GAME_OVER = 2;
 
     // coins
     ArrayList<Integer> coinXs = new ArrayList<>();
@@ -53,10 +65,16 @@ public class CoinMan extends ApplicationAdapter {
         man[2] = new Texture("frame-3.png");
         man[3] = new Texture("frame-4.png");
 
+        dizzyMan = new Texture("dizzy-1.png");
+
         manY = Gdx.graphics.getHeight() / 2;
 
         coin = new Texture("coin.png");
         random = new Random();
+
+        font = new BitmapFont();
+        font.setColor(Color.WHITE);
+        font.getData().setScale(10);
 
         bomb = new Texture("bomb.png");
 
@@ -68,18 +86,60 @@ public class CoinMan extends ApplicationAdapter {
         startDrawing();
         drawBackground();
 
+        checkGameState();
+        drawPlayer();
+        checkCollisionWithCoin();
+        checkCollisionWithBomb();
+        drawScore();
+        endDrawing();
+    }
+
+    private void checkGameState() {
+        if (gameState == GAME_LIVE) {
+            // game is live
+            play();
+        } else if (gameState == GAME_NOT_STARTED) {
+            // game hasn't started yet
+            checkIfGameStarted();
+        } else if (gameState == GAME_OVER) {
+            // game is over
+            checkIfGameStarted();
+            resetGame();
+        }
+    }
+
+    private void checkIfGameStarted() {
+        if (Gdx.input.justTouched()) {
+            gameState = GAME_LIVE;
+        }
+    }
+
+    private void play() {
         createBombs();
         createCoins();
 
         jumpIfTheScreenHasBeenTouched();
         run();
         fallDown();
+    }
 
-        drawPlayer();
-        checkCollisionWithCoin();
-        checkCollisionWithBomb();
+    private void resetGame() {
+        manY = Gdx.graphics.getHeight() / 2;
+        score = 0;
+        velocity = 0;
+        coinXs.clear();
+        coinYs.clear();
+        coinRectangles.clear();
+        coinCount = 0;
+        bombXs.clear();
+        bombYs.clear();
+        bombRectangles.clear();
+        bombCount = 0;
+    }
 
-        endDrawing();
+    private void drawScore() {
+        // draw score in the bottom left corner
+        font.draw(batch, String.valueOf(score), 100, 200);
     }
 
     private void createBombs() {
@@ -137,8 +197,12 @@ public class CoinMan extends ApplicationAdapter {
     private void drawPlayer() {
         manX = Gdx.graphics.getWidth() / 2 - man[manState].getWidth() / 2;
         // position the man in the center of the screen
-        batch.draw(man[manState], manX, manY);
-        playerRectangle = new Rectangle(manX, manY, man[manState].getWidth(), man[manState].getHeight());
+        if (gameState == GAME_OVER) {
+            batch.draw(dizzyMan, manX, manY);
+        } else {
+            batch.draw(man[manState], manX, manY);
+            playerRectangle = new Rectangle(manX, manY, man[manState].getWidth(), man[manState].getHeight());
+        }
     }
 
     private void fallDown() {
@@ -200,7 +264,12 @@ public class CoinMan extends ApplicationAdapter {
     private void checkCollisionWithCoin() {
         for (int i = 0; i < coinRectangles.size(); i++) {
             if (Intersector.overlaps(playerRectangle, coinRectangles.get(i))) {
-                Gdx.app.log("Coin!", "Collision with coin");
+                score++;
+                // avoid colliding with the coin on and on again
+                coinRectangles.remove(i);
+                coinXs.remove(i);
+                coinYs.remove(i);
+                break;
             }
         }
     }
@@ -208,7 +277,7 @@ public class CoinMan extends ApplicationAdapter {
     private void checkCollisionWithBomb() {
         for (int i = 0; i < bombRectangles.size(); i++) {
             if (Intersector.overlaps(playerRectangle, bombRectangles.get(i))) {
-                Gdx.app.log("Bomb!", "Collision with bomb");
+                gameState = GAME_OVER;
             }
         }
     }
