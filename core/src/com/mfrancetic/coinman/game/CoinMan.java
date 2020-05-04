@@ -13,51 +13,51 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class CoinMan extends ApplicationAdapter {
-    SpriteBatch batch;
-    Texture background;
-    Texture[] man;
-    Texture dizzyMan;
-    int manState;
-    int pause = 0;
+
+    private SpriteBatch batch;
+    private Texture background;
+    private Texture[] man;
+    private Texture dizzyMan;
+    private int manState;
+    private int pause = 0;
 
     // how fast the player is falling
-    float gravity = 0.2f;
-    float velocity = 0;
+    private float gravity = 0.2f;
+    private float velocity = 0;
 
-    int manY = 0;
-    int manX = 0;
-    Rectangle playerRectangle;
+    private int manY = 0;
+    private int manX = 0;
+    private Rectangle playerRectangle;
 
-    int score;
-    BitmapFont font;
-
-    Random random;
-
-    int gameState;
+    private int score;
+    private BitmapFont font;
+    private Random random;
+    private int gameState;
 
     private static final int GAME_LIVE = 1;
     private static final int GAME_NOT_STARTED = 0;
     private static final int GAME_OVER = 2;
 
     // coins
-    ArrayList<Integer> coinXs = new ArrayList<>();
-    ArrayList<Integer> coinYs = new ArrayList<>();
+    private ArrayList<Integer> coinXs = new ArrayList<>();
+    private ArrayList<Integer> coinYs = new ArrayList<>();
     // we use them for collision check
-    ArrayList<Rectangle> coinRectangles = new ArrayList<>();
-    Texture coin;
-    int coinCount;
+    private ArrayList<Rectangle> coinRectangles = new ArrayList<>();
+    private Texture coin;
+    private int coinCount;
 
     // bombs
-    ArrayList<Integer> bombXs = new ArrayList<>();
-    ArrayList<Integer> bombYs = new ArrayList<>();
+    private ArrayList<Integer> bombXs = new ArrayList<>();
+    private ArrayList<Integer> bombYs = new ArrayList<>();
     // we use them for collision check
-    ArrayList<Rectangle> bombRectangles = new ArrayList<>();
-    Texture bomb;
-    int bombCount;
+    private ArrayList<Rectangle> bombRectangles = new ArrayList<>();
+    private Texture bomb;
+    private int bombCount;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
+
         background = new Texture("bg.png");
         man = new Texture[4];
         man[0] = new Texture("frame-1.png");
@@ -66,17 +66,16 @@ public class CoinMan extends ApplicationAdapter {
         man[3] = new Texture("frame-4.png");
 
         dizzyMan = new Texture("dizzy-1.png");
+        coin = new Texture("coin.png");
+        bomb = new Texture("bomb.png");
+
+        random = new Random();
 
         manY = Gdx.graphics.getHeight() / 2;
-
-        coin = new Texture("coin.png");
-        random = new Random();
 
         font = new BitmapFont();
         font.setColor(Color.WHITE);
         font.getData().setScale(10);
-
-        bomb = new Texture("bomb.png");
 
         playerRectangle = new Rectangle();
     }
